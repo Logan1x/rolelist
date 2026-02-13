@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, useEffect, useCallback } from 'react'
-import { ExternalLink, EyeOff, CheckCircle2, Plus, Trash2, RotateCcw, Clock, CheckCircle, ListTodo } from 'lucide-react'
+import { ExternalLink, EyeOff, CheckCircle2, Plus, Trash2, RotateCcw, Clock, CheckCircle, ListTodo, BarChart3, TrendingUp, Target, Calendar } from 'lucide-react'
 import Modal from '@/components/Modal'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -100,6 +100,39 @@ export default function JobBoardPage() {
       })
   }, [jobs, tab, query])
 
+  const stats = useMemo(() => {
+    const total = jobs.length
+    const todo = jobs.filter(j => j.status === 'todo').length
+    const applied = jobs.filter(j => j.status === 'applied').length
+    const hidden = jobs.filter(j => j.status === 'hidden').length
+    const needsFollowUp = jobs.filter(j => 
+      j.status === 'applied' && j.appliedAt && dayjs().diff(dayjs(j.appliedAt), 'day') > 3
+    ).length
+    
+    // This week's applications
+    const thisWeek = jobs.filter(j => 
+      dayjs(j.createdAt).isAfter(dayjs().subtract(7, 'day'))
+    ).length
+    
+    // Last week's applications
+    const lastWeek = jobs.filter(j => {
+      const created = dayjs(j.createdAt)
+      return created.isBefore(dayjs().subtract(7, 'day')) && 
+             created.isAfter(dayjs().subtract(14, 'day'))
+    }).length
+    
+    return {
+      total,
+      todo,
+      applied,
+      hidden,
+      needsFollowUp,
+      thisWeek,
+      lastWeek,
+      applicationRate: total > 0 ? Math.round((applied / total) * 100) : 0
+    }
+  }, [jobs])
+
   async function refresh() {
     await loadJobs()
   }
@@ -178,6 +211,73 @@ export default function JobBoardPage() {
             Keep a clean list of roles to apply to. Track applications, stay organized.
           </p>
         </div>
+
+        {/* Stats Dashboard */}
+        <section className="rounded-xl border p-5" style={{ borderColor: '#d1d1e9', backgroundColor: '#f8f8fc' }}>
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart3 className="h-5 w-5" style={{ color: '#6246ea' }} />
+            <h2 className="text-lg font-semibold" style={{ color: '#2b2c34' }}>Your Progress</h2>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Total */}
+            <div className="rounded-lg border p-4 text-center" style={{ borderColor: '#d1d1e9', backgroundColor: '#fffffe' }}>
+              <div className="text-2xl font-bold" style={{ color: '#6246ea' }}>{stats.total}</div>
+              <div className="text-xs mt-1" style={{ color: '#2b2c34', opacity: 0.7 }}>Total Roles</div>
+            </div>
+            
+            {/* To Apply */}
+            <div className="rounded-lg border p-4 text-center" style={{ borderColor: '#d1d1e9', backgroundColor: '#fffffe' }}>
+              <div className="text-2xl font-bold" style={{ color: '#2b2c34' }}>{stats.todo}</div>
+              <div className="text-xs mt-1" style={{ color: '#2b2c34', opacity: 0.7 }}>To Apply</div>
+            </div>
+            
+            {/* Applied */}
+            <div className="rounded-lg border p-4 text-center" style={{ borderColor: '#d1d1e9', backgroundColor: '#fffffe' }}>
+              <div className="text-2xl font-bold" style={{ color: '#6246ea' }}>{stats.applied}</div>
+              <div className="text-xs mt-1" style={{ color: '#2b2c34', opacity: 0.7 }}>Applied</div>
+            </div>
+            
+            {/* Application Rate */}
+            <div className="rounded-lg border p-4 text-center" style={{ borderColor: '#d1d1e9', backgroundColor: '#fffffe' }}>
+              <div className="flex items-center justify-center gap-1">
+                <span className="text-2xl font-bold" style={{ color: stats.applicationRate >= 50 ? '#6246ea' : '#e45858' }}>
+                  {stats.applicationRate}%
+                </span>
+              </div>
+              <div className="text-xs mt-1" style={{ color: '#2b2c34', opacity: 0.7 }}>Application Rate</div>
+            </div>
+          </div>
+          
+          {/* Secondary Stats */}
+          <div className="grid grid-cols-3 gap-4 mt-4 pt-4" style={{ borderTop: '1px solid #d1d1e9' }}>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" style={{ color: stats.thisWeek >= stats.lastWeek ? '#6246ea' : '#e45858' }} />
+              <div>
+                <div className="text-sm font-medium" style={{ color: '#2b2c34' }}>{stats.thisWeek}</div>
+                <div className="text-xs" style={{ color: '#2b2c34', opacity: 0.6 }}>This Week</div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" style={{ color: '#6246ea' }} />
+              <div>
+                <div className="text-sm font-medium" style={{ color: '#2b2c34' }}>{stats.lastWeek}</div>
+                <div className="text-xs" style={{ color: '#2b2c34', opacity: 0.6 }}>Last Week</div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Target className="h-4 w-4" style={{ color: stats.needsFollowUp > 0 ? '#e45858' : '#6246ea' }} />
+              <div>
+                <div className="text-sm font-medium" style={{ color: stats.needsFollowUp > 0 ? '#e45858' : '#2b2c34' }}>
+                  {stats.needsFollowUp}
+                </div>
+                <div className="text-xs" style={{ color: '#2b2c34', opacity: 0.6 }}>Need Follow-up</div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add a role">
           <div className="space-y-3">
@@ -327,6 +427,50 @@ export default function JobBoardPage() {
           </div>
         </section>
 
+        {/* Where to look for new jobs */}
+        <section className="rounded-xl border p-5" style={{ borderColor: '#d1d1e9', backgroundColor: '#f8f8fc' }}>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold" style={{ color: '#2b2c34' }}>Where to look for new jobs</h2>
+          </div>
+          <p className="mt-1 text-sm" style={{ color: '#2b2c34', opacity: 0.7 }}>
+            Quick shortlist of places to check for fresh roles, founder posts, and portfolio hiring.
+          </p>
+
+          <div className="mt-4 grid gap-6 md:grid-cols-2">
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide" style={{ color: '#2b2c34', opacity: 0.6 }}>
+                Firms / portfolios
+              </div>
+              <ul className="mt-2 space-y-2 text-sm">
+                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://a16z.com/portfolio/" target="_blank" rel="noreferrer">a16z (Andreessen Horowitz)</a></li>
+                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://techcrunch.com/" target="_blank" rel="noreferrer">TechCrunch</a></li>
+                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://www.sequoiacap.com/companies/" target="_blank" rel="noreferrer">Sequoia (portfolio)</a></li>
+                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://www.tigerglobal.com/" target="_blank" rel="noreferrer">Tiger Global</a></li>
+                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://www.ycombinator.com/companies" target="_blank" rel="noreferrer">Y Combinator (companies)</a></li>
+                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://nventures.nvidia.com/" target="_blank" rel="noreferrer">NVIDIA Ventures</a></li>
+                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://gradient.com/" target="_blank" rel="noreferrer">Gradient Ventures (Google)</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide" style={{ color: '#2b2c34', opacity: 0.6 }}>
+                Angels / founders to follow
+              </div>
+              <ul className="mt-2 space-y-2 text-sm" style={{ color: '#2b2c34' }}>
+                <li>Elad Gil</li>
+                <li>Arash Ferdowsi (founder/ex-CTO of Dropbox)</li>
+                <li>Paul Copplestone (founder/CEO of Supabase)</li>
+                <li>James Hawkins (founder/CEO of PostHog)</li>
+                <li>Andrew Miklas (founder/ex-CTO of PagerDuty)</li>
+                <li>Diana Hu (GP at Y Combinator)</li>
+              </ul>
+              <p className="mt-3 text-xs" style={{ color: '#2b2c34', opacity: 0.6 }}>
+                Tip: when you find a relevant post, click <b>Add</b> and paste the link.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section className="grid gap-3">
           {filtered.length === 0 ? (
             <div 
@@ -374,9 +518,17 @@ export default function JobBoardPage() {
                         {dayjs(j.createdAt).fromNow()}
                       </span>
                       {j.status === 'applied' && j.appliedAt ? (
-                        <span className="inline-flex items-center gap-1" title={new Date(j.appliedAt).toLocaleString()}>
-                          <CheckCircle className="h-3 w-3" style={{ color: '#6246ea' }} />
+                        <span 
+                          className="inline-flex items-center gap-1" 
+                          title={new Date(j.appliedAt).toLocaleString()}
+                          style={{ 
+                            color: dayjs().diff(dayjs(j.appliedAt), 'day') > 3 ? '#e45858' : undefined,
+                            fontWeight: dayjs().diff(dayjs(j.appliedAt), 'day') > 3 ? '600' : undefined
+                          }}
+                        >
+                          <CheckCircle className="h-3 w-3" style={{ color: dayjs().diff(dayjs(j.appliedAt), 'day') > 3 ? '#e45858' : '#6246ea' }} />
                           {dayjs(j.appliedAt).fromNow()}
+                          {dayjs().diff(dayjs(j.appliedAt), 'day') > 3 ? <span className="ml-1">(Follow up!)</span> : null}
                         </span>
                       ) : null}
                       {j.source ? <span>Source: {j.source}</span> : null}
