@@ -72,6 +72,7 @@ export default function JobBoardPage() {
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [addOpen, setAddOpen] = useState(false)
+  const [sourcesOpen, setSourcesOpen] = useState(false)
 
   const loadJobs = useCallback(async () => {
     try {
@@ -427,48 +428,65 @@ export default function JobBoardPage() {
           </div>
         </section>
 
-        {/* Where to look for new jobs */}
-        <section className="rounded-xl border p-5" style={{ borderColor: '#d1d1e9', backgroundColor: '#f8f8fc' }}>
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold" style={{ color: '#2b2c34' }}>Where to look for new jobs</h2>
-          </div>
-          <p className="mt-1 text-sm" style={{ color: '#2b2c34', opacity: 0.7 }}>
-            Quick shortlist of places to check for fresh roles, founder posts, and portfolio hiring.
-          </p>
-
-          <div className="mt-4 grid gap-6 md:grid-cols-2">
+        {/* Where to look for new jobs (accordion) */}
+        <section className="rounded-xl border" style={{ borderColor: '#d1d1e9', backgroundColor: '#f8f8fc' }}>
+          <button
+            type="button"
+            className="flex w-full items-center justify-between gap-3 p-5 text-left"
+            onClick={() => setSourcesOpen((v) => !v)}
+          >
             <div>
-              <div className="text-xs font-medium uppercase tracking-wide" style={{ color: '#2b2c34', opacity: 0.6 }}>
-                Firms / portfolios
+              <div className="text-lg font-semibold" style={{ color: '#2b2c34' }}>Where to look for new jobs</div>
+              <div className="mt-1 text-sm" style={{ color: '#2b2c34', opacity: 0.7 }}>
+                Shortlist of places to check for fresh roles, founder posts, and portfolio hiring.
               </div>
-              <ul className="mt-2 space-y-2 text-sm">
-                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://a16z.com/portfolio/" target="_blank" rel="noreferrer">a16z (Andreessen Horowitz)</a></li>
-                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://techcrunch.com/" target="_blank" rel="noreferrer">TechCrunch</a></li>
-                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://www.sequoiacap.com/companies/" target="_blank" rel="noreferrer">Sequoia (portfolio)</a></li>
-                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://www.tigerglobal.com/" target="_blank" rel="noreferrer">Tiger Global</a></li>
-                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://www.ycombinator.com/companies" target="_blank" rel="noreferrer">Y Combinator (companies)</a></li>
-                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://nventures.nvidia.com/" target="_blank" rel="noreferrer">NVIDIA Ventures</a></li>
-                <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://gradient.com/" target="_blank" rel="noreferrer">Gradient Ventures (Google)</a></li>
-              </ul>
             </div>
+            <div
+              className="select-none text-xl"
+              style={{ color: '#2b2c34', opacity: 0.6 }}
+              aria-hidden
+            >
+              {sourcesOpen ? '−' : '+'}
+            </div>
+          </button>
 
-            <div>
-              <div className="text-xs font-medium uppercase tracking-wide" style={{ color: '#2b2c34', opacity: 0.6 }}>
-                Angels / founders to follow
+          {sourcesOpen ? (
+            <div className="px-5 pb-5">
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <div className="text-xs font-medium uppercase tracking-wide" style={{ color: '#2b2c34', opacity: 0.6 }}>
+                    Firms / portfolios
+                  </div>
+                  <ul className="mt-2 space-y-2 text-sm">
+                    <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://a16z.com/portfolio/" target="_blank" rel="noreferrer">a16z (Andreessen Horowitz)</a></li>
+                    <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://techcrunch.com/" target="_blank" rel="noreferrer">TechCrunch</a></li>
+                    <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://www.sequoiacap.com/companies/" target="_blank" rel="noreferrer">Sequoia (portfolio)</a></li>
+                    <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://www.tigerglobal.com/" target="_blank" rel="noreferrer">Tiger Global</a></li>
+                    <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://www.ycombinator.com/companies" target="_blank" rel="noreferrer">Y Combinator (companies)</a></li>
+                    <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://nventures.nvidia.com/" target="_blank" rel="noreferrer">NVIDIA Ventures</a></li>
+                    <li><a className="underline underline-offset-4" style={{ color: '#2b2c34' }} href="https://gradient.com/" target="_blank" rel="noreferrer">Gradient Ventures (Google)</a></li>
+                  </ul>
+                </div>
+
+                <div>
+                  <div className="text-xs font-medium uppercase tracking-wide" style={{ color: '#2b2c34', opacity: 0.6 }}>
+                    Angels / founders to follow
+                  </div>
+                  <ul className="mt-2 space-y-2 text-sm" style={{ color: '#2b2c34' }}>
+                    <li>Elad Gil</li>
+                    <li>Arash Ferdowsi (founder/ex-CTO of Dropbox)</li>
+                    <li>Paul Copplestone (founder/CEO of Supabase)</li>
+                    <li>James Hawkins (founder/CEO of PostHog)</li>
+                    <li>Andrew Miklas (founder/ex-CTO of PagerDuty)</li>
+                    <li>Diana Hu (GP at Y Combinator)</li>
+                  </ul>
+                  <p className="mt-3 text-xs" style={{ color: '#2b2c34', opacity: 0.6 }}>
+                    Tip: when you find a relevant post, click <b>Add</b> and paste the link.
+                  </p>
+                </div>
               </div>
-              <ul className="mt-2 space-y-2 text-sm" style={{ color: '#2b2c34' }}>
-                <li>Elad Gil</li>
-                <li>Arash Ferdowsi (founder/ex-CTO of Dropbox)</li>
-                <li>Paul Copplestone (founder/CEO of Supabase)</li>
-                <li>James Hawkins (founder/CEO of PostHog)</li>
-                <li>Andrew Miklas (founder/ex-CTO of PagerDuty)</li>
-                <li>Diana Hu (GP at Y Combinator)</li>
-              </ul>
-              <p className="mt-3 text-xs" style={{ color: '#2b2c34', opacity: 0.6 }}>
-                Tip: when you find a relevant post, click <b>Add</b> and paste the link.
-              </p>
             </div>
-          </div>
+          ) : null}
         </section>
 
         <section className="grid gap-3">
