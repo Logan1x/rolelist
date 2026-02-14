@@ -535,6 +535,13 @@ export default function JobBoardPage() {
                         <Clock className="h-3 w-3" />
                         {dayjs(j.createdAt).fromNow()}
                       </span>
+                      <span
+                        className="inline-flex items-center gap-1 font-mono"
+                        title="Job ID (share this with Claw)"
+                        style={{ opacity: 0.8 }}
+                      >
+                        ID: {j.id}
+                      </span>
                       {j.status === 'applied' && j.appliedAt ? (
                         <span 
                           className="inline-flex items-center gap-1" 
